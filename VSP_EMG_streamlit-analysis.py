@@ -196,7 +196,7 @@ This is commonly used to analyze muscle timing and intensity in gait.
 apply_lowpass = st.checkbox("Apply Low-Pass Filter (Envelope Detection)")
 
 if apply_lowpass:
-    lp_cutoff = st.slider("Low-Pass Cutoff Frequency (Hz)", min_value=1, max_value=50, value=6, step=1)
+    lp_cutoff = st.slider("Low-Pass Cutoff Frequency (Hz)", min_value=1, max_value=300, value=6, step=1)
     lp_order = st.slider("Low-Pass Filter Order", min_value=1, max_value=8, value=4)
 
     # Define low-pass filter function
