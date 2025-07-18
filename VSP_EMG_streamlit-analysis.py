@@ -64,6 +64,8 @@ gas_signal = generate_muscle_profile(gas_pattern)
 bf_signal = generate_muscle_profile(bf_pattern)
 rf_signal = generate_muscle_profile(rf_pattern)
 
+
+
 # Streamlit interface
 st.title("Gait Cycle EMG Data Analaysis")
 muscle_options = ["Tibialis Anterior (TA)", "Gastrocnemius (GM)", "Biceps Femoris (BF)", "Rectus Femoris (RF)"]
@@ -95,49 +97,15 @@ fig.update_layout(
 
 st.plotly_chart(fig)
 
-# ------------------------------
-# Step 2: High-Pass Filtering
-# ------------------------------
-
-st.markdown("## Step 1: Full Wave Rectification")
-
 st.write("""
-EMG signals from bipolar electrodes contain both positive and negative voltages due to muscle fiber depolarization. If we averaged this raw signal directly, the positive and negative phases would cancel each other out. To avoid this and accurately reflect overall muscle activity, we apply full-wave rectification, which converts all values to positive by taking the absolute value of the signal
+The first step in signal analysis is to clean up the signal to remove noise and focus on the relevant motion data
 """)
 
-"Click the box below to rectify the signal"
-
-apply_rectification = st.checkbox("Apply Full-Wave Rectification")
-
-if apply_rectification:
-	muscle_signal_rect = np.abs(muscle_signal) if apply_rectification else muscle_signal
-	# Plotting
-	fig = go.Figure()
-	fig.add_trace(go.Scatter(x=time_vector, y=muscle_signal_rect, mode='lines', name=selected_muscle))
-
-	for i in range(gait_cycles):
-	    fig.add_vline(x=i, line=dict(color="black", dash="dot"),
-	                  annotation_text=f"Cycle {i+1}", annotation_position="top right")
-
-	fig.update_layout(
-	    title=f"EMG for {selected_muscle}",
-	    xaxis_title="Time (s)",
-	    yaxis_title="Amplitude (µV)",
-	    showlegend=True
-	)
-
-	st.plotly_chart(fig)
-
-	st.write(f"{'Full-Wave Rectification applied.' if apply_rectification else 'Raw EMG signal shown.'}")
-else:
-    st.info("Full-wave rectification not applied. You can enable it by clicking the checkbox.")
-
-
 
 # ------------------------------
-# Step 2: High-Pass Filtering
+# Step 1: High-Pass Filtering
 # ------------------------------
-st.markdown("## Step 2: High-Pass Filtering")
+st.markdown("## Step 1: High-Pass Filtering")
 
 st.write("""
 A high-pass filter removes low-frequency movement artifacts and DC drift.  
@@ -147,7 +115,7 @@ Use the sliders below to explore how different cutoff frequencies affect the sig
 apply_filter = st.checkbox("Apply High-Pass Filter")
 
 if apply_filter:
-    cutoff_freq = st.slider("Cutoff Frequency (Hz)", min_value=1, max_value=100, value=20, step=1)
+    cutoff_freq = st.slider("Cutoff Frequency (Hz)", min_value=1, max_value=30, value=20, step=1)
     filter_order = st.slider("Filter Order", min_value=1, max_value=8, value=4)
 
     # Define high-pass filter function
@@ -158,7 +126,7 @@ if apply_filter:
         return filtfilt(b, a, signal)
 
     # Apply high-pass filter
-    filtered_signal = high_pass_filter(muscle_signal_rect, cutoff=cutoff_freq, order=filter_order)
+    filtered_signal = high_pass_filter(muscle_signal, cutoff=cutoff_freq, order=filter_order)
 
     # Plot filtered signal
     fig_filt = go.Figure()
@@ -182,6 +150,42 @@ else:
 
 
 
+# ------------------------------
+# Step 2: Full wave rectification
+# ------------------------------
+
+st.markdown("## Step 2: Full Wave Rectification")
+
+st.write("""
+EMG signals from bipolar electrodes contain both positive and negative voltages due to muscle fiber depolarization. If we averaged this raw signal directly, the positive and negative phases would cancel each other out. To avoid this and accurately reflect overall muscle activity, we apply full-wave rectification, which converts all values to positive by taking the absolute value of the signal
+""")
+
+"Click the box below to rectify the signal"
+
+apply_rectification = st.checkbox("Apply Full-Wave Rectification")
+
+if apply_rectification:
+    muscle_signal_rect = np.abs(filtered_signal) if apply_rectification else muscle_signal
+    # Plotting
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=time_vector, y=muscle_signal_rect, mode='lines', name=selected_muscle))
+
+    for i in range(gait_cycles):
+        fig.add_vline(x=i, line=dict(color="black", dash="dot"),
+                      annotation_text=f"Cycle {i+1}", annotation_position="top right")
+
+    fig.update_layout(
+        title=f"EMG for {selected_muscle}",
+        xaxis_title="Time (s)",
+        yaxis_title="Amplitude (µV)",
+        showlegend=True
+    )
+
+    st.plotly_chart(fig)
+
+    st.write(f"{'Full-Wave Rectification applied.' if apply_rectification else 'Raw EMG signal shown.'}")
+else:
+    st.info("Full-wave rectification not applied. You can enable it by clicking the checkbox.")
 
 # ------------------------------
 # Step 3: Low-Pass Filtering (Envelope Detection)
@@ -451,4 +455,8 @@ if user_answer != "Choose an option":
         st.success("✅ Correct! Well done.")
     else:
         st.error(f"❌ Not quite. Please try again.")
+
+
+
+
 
