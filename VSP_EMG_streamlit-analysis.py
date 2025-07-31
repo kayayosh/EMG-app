@@ -71,7 +71,7 @@ rf_signal = generate_muscle_profile(rf_pattern)
 # Streamlit interface
 st.title("Gait Cycle EMG Data Analaysis")
 muscle_options = ["Tibialis Anterior (TA)", "Gastrocnemius (GM)", "Biceps Femoris (BF)", "Rectus Femoris (RF)"]
-selected_muscle = st.selectbox("Select Muscle to Analyze", muscle_options)
+selected_muscle = st.sidebar.selectbox("Select Muscle to Analyze", muscle_options)
 
 # Map muscle to signal
 muscle_map = {
