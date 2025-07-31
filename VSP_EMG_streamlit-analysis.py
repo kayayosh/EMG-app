@@ -22,6 +22,9 @@ def high_pass_filter(signal, cutoff, fs=1000, order=4):
 st.title('Analyze electromyography (EMG) data')
 
 "This program will walk you through the steps of EMG of gait data from 4 different leg muscles"
+# Display image at the top of the app
+st.image("/Users/kayayoshida/Library/CloudStorage/OneDrive-UBC/PhD ONEDRIVE/SUBPython/EMG_app/muscles_of_leg.png", use_column_width=True)
+
 
 # Set random seed for reproducibility
 np.random.seed(42)
